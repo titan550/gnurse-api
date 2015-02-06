@@ -31,14 +31,13 @@ class DbHandler
 	 */
 	public function createUser($name, $email, $password)
 	{
-		require_once 'PassHash.php';
 		$response = array ();
 		
 		// First check if user already existed in db
 		if (! $this->isUserExists ( $email ))
 		{
 			// Generating password hash
-			$password_hash = PassHash::hash ( $password );
+			$password_hash = password_hash($password, PASSWORD_DEFAULT);
 			
 			// Generating API key with random function
 			$api_key = $this->generateApiKey ();
@@ -103,16 +102,7 @@ class DbHandler
 			
 			$stmt->close ();
 			
-			if (PassHash::check_password ( $password_hash, $password ))
-			{
-				// User password is correct
-				return TRUE;
-			}
-			else
-			{
-				// user password is incorrect
-				return FALSE;
-			}
+			return password_verify($password, $password_hash);
 		}
 		else
 		{
@@ -154,6 +144,7 @@ class DbHandler
 		if ($stmt->execute ())
 		{
 			$user = $stmt->get_result ()->fetch_assoc ();
+			
 			$stmt->close ();
 			return $user;
 		}
